@@ -1,0 +1,8 @@
+hello this a test for a short document
+that i want to edit.
+some say
+
+there was a line space
+others say i put a carriage return on the line above and this one
+lol the 
+i ended the line above with a space
