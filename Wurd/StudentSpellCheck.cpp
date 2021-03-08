@@ -32,72 +32,76 @@ bool StudentSpellCheck::load(std::string dictionaryFile)
 	return true;
 }
 
-bool StudentSpellCheck::spellCheck(std::string word, int max_suggestions, std::vector<std::string>& suggestions) 
+bool StudentSpellCheck::spellCheck(std::string word, int maxSuggestions, std::vector<std::string>& suggestions) 
 {
-	if (search(word, m_root))	// Runs in 2L time
+	if (search(word, m_root))	// Search runs in O(2L) time
 		return true;
 
-	suggestions.clear();	// Runs in maxSuggestions 
+	suggestions.clear();	// Runs in O(maxSuggestions) time
 
-	for (int i = 0; i < word.size(); i++)
-	{ // L*2L*27 ~ L^2
-		string temp = word;
-		for (int j = 0; j < 27; j++)
-		{	// 2L*27
+	for (int i = 0; i < word.size(); i++) // Runs L*O(L) times
+	{ 
+		string temp = word;	// Temp has a length of L
+		for (int j = 0; j < 27; j++)	// Runs 27*O(2L) => O(L)
+		{	
 			if (j == 26)
 				temp[i] = '\'';
 			else
 				temp[i] = j + 'a';
 
-			if (search(temp, m_root))		// Runs in 2L
+			if (suggestions.size() != maxSuggestions && search(temp, m_root)) // Search runs in O(2L) time
 				suggestions.push_back(temp);
 		}
 		temp = word;
 	}
-	return false; // TODO
+	return false;
 }
 
 void StudentSpellCheck::spellCheckLine(const std::string& line, std::vector<SpellCheck::Position>& problems) 
 {
-//	problems.clear();
-	int i = 0;
-	size_t start = 0;
-	size_t end = 0;
-
-	while (i < line.size())
+	int start = 0;
+	int prevStart = -1;
+	int end = 0;
+	int count = 0;
+	vector<Position> positions;
+	vector<string> words;
+	string temp; 
+	for (int i = 0; i < line.size(); i++) // Runs linear to length of line O(S)
 	{
-		if (!isalpha(tolower(line[i])) && line[i] != '\'')
+		if (isalpha(line[i]) || line[i] == '\'')
 		{
+			if (temp == "")
+				start = i;
+			temp.push_back(line[i]);
+		}
+		else
+		{
+			if (i != 0 && temp != "")
+				words.push_back(temp);
 			end = i;
-			// new pos= start,end-1
-			if (start != 0)
-				start++;
-
-			if (end > start) // Executes number of words in line - 1 (W -1)
-			{
-				string temp = line.substr(start, end - start);	// L
-				if (!search(temp, m_root))		// 2L
-				{
-					Position p; p.start = start; p.end = end - 1;
-					problems.push_back(p);
-				}
-			}
-			start = end;
+			temp = "";
 		}
-		i++;
-	}
-	if (i == line.size())
-	{
-		end = line.size();
-		if (end > start + 1) // Last word in message, executes once
+		if (start < end && start != prevStart) // Doesn't repeat previous invalid words
 		{
-			string temp = line.substr(start + 1, end - start);
-			if (!search(temp, m_root)) 
-			{
-				Position p; p.start = start + 1; p.end = end - 1;
-				problems.push_back(p);
-			}
+			if (!isalpha(line[start]) && line[start] != '\'')	// Invalid word, don't want the position
+				continue;
+			prevStart = start;
+			Position p; p.start = start; p.end = end - 1;
+			positions.push_back(p);
 		}
+	}
+	// Check if last word is valid
+	if (!temp.empty() && (isalpha(temp[temp.size() - 1]) || temp[temp.size() - 1] == '\''))
+	{
+		words.push_back(temp);
+		Position p; p.start = start; p.end = line.size() - 1;
+		positions.push_back(p);
+	}
+
+	for (int i = 0; i < words.size(); i++)	// Runs linear to number of words in the line 2L*O(W) => O(W*L)
+	{
+		if (!search(words[i], m_root)) // Search runs in O(2L) where L is the length of the word being searched for
+			problems.push_back(positions[i]);
 	}
 }
 
@@ -138,7 +142,7 @@ bool StudentSpellCheck::search(string word, StudentSpellCheck::TrieNode* root)
 StudentSpellCheck::TrieNode* StudentSpellCheck::getNode(string word, StudentSpellCheck::TrieNode* root)
 {
 	TrieNode* curr = root;
-	for (int i = 0; i < word.size(); i++)
+	for (int i = 0; i < word.size(); i++)	
 	{
 		char ch = word.at(i);
 		if (isalpha(ch))
