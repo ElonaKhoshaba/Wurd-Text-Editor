@@ -7,15 +7,16 @@
 static const std::string DICTIONARYPATH = "C:/CS32/winskel/Wurd/Wurd/dictionary.txt";
 const int FOREGROUND_COLOR = COLOR_WHITE;
 const int BACKGROUND_COLOR = COLOR_BLACK;
-const int HIGHLIGHT_COLOR  = COLOR_RED;
+const int HIGHLIGHT_COLOR  = COLOR_CYAN;
 // Choices are COLOR_x, where x is WHITE, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN
 
 int main(int argc, char* argv[]) {
 	TextIO ti(FOREGROUND_COLOR, BACKGROUND_COLOR, HIGHLIGHT_COLOR);
 
-	EditorGui editor(LINES, COLS);
+	 EditorGui editor(LINES, COLS);
 
-	if (!editor.loadDictionary(DICTIONARYPATH)) {
+	if (!editor.loadDictionary(DICTIONARYPATH)) 
+	{
 		editor.writeStatus("Error: Can not load dictionary " + DICTIONARYPATH);
 	}
 	if (argc == 2) {

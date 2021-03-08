@@ -37,9 +37,9 @@ private:
 	int m_curRow;
 	int m_curCol;
 	std::list<std::string> m_lines;
-	std::list<std::string>::const_iterator m_curRowIter;
+	std::list<std::string>::iterator m_curRowIter;
 	// 3. data to faciliate undo operations? pointer to StudentUndo
-	StudentUndo* m_undo;
+
 	// other variables
 
 	// GOAL: 
