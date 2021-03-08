@@ -25,24 +25,21 @@ private:
 		{
 			ch = x;
 		}
+		~TrieNode()
+		{
+			for (int i = 0; i < 27; i++)
+				delete children[i];
+		}
 		char ch;
 		TrieNode* children[27] = { nullptr }; // English alphabet + apostrophe
 		bool isWord = false;
-
-		int countChildren()
-		{
-			int count = 0;
-			for (int i = 0; i < 27; i++)
-				if (children[i] != nullptr)
-					count++;
-			return count;
-		}
 	};
 	StudentSpellCheck::TrieNode* m_root;
 
 	void insert(StudentSpellCheck::TrieNode* curr, std::string line);
 	bool search(std::string word, StudentSpellCheck::TrieNode* root);
 	StudentSpellCheck::TrieNode* getNode(std::string word, StudentSpellCheck::TrieNode* root);
+	void removeAll(StudentSpellCheck::TrieNode* node);
 };
 
 #endif  // STUDENTSPELLCHECK_H_

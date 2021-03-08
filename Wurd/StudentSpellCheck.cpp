@@ -12,7 +12,7 @@ SpellCheck* createSpellCheck()
 
 StudentSpellCheck::~StudentSpellCheck() 
 {
-	// TODO
+	removeAll(m_root);
 }
 
 bool StudentSpellCheck::load(std::string dictionaryFile)
@@ -162,4 +162,16 @@ StudentSpellCheck::TrieNode* StudentSpellCheck::getNode(string word, StudentSpel
 
 	}
 	return curr;
+}
+
+void StudentSpellCheck::removeAll(StudentSpellCheck::TrieNode* curr)
+{
+	if (curr == nullptr)
+		return;
+	for (int i = 0; i < 27; i++)
+	{
+		removeAll(curr->children[i]);
+
+	}
+	delete curr;
 }
