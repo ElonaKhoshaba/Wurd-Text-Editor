@@ -26,7 +26,7 @@ StudentTextEditor::~StudentTextEditor()
 {
 	// TODO
 	// for each line in linesBeingEdited
-	//		delete line
+	//		delete line  ???
 }
 
 // Loads the contents of a text file off disk into the editor
@@ -334,21 +334,41 @@ void StudentTextEditor::undo()
 	}
 	m_curRow = row;
 	m_curCol = col;
-	
+
 	switch (command)
 	{
-	case Undo::Action::INSERT:
-		(*m_curRowIter).insert(m_curCol, text);
-		/*for (int i = 0; i < text.size() - 1; i++)
-			m_curCol++;*/
-		break;
-	case Undo::Action::DELETE:
-		(*m_curRowIter).erase(m_curCol, count);
-		break;
-	case Undo::Action::SPLIT:
-		break;
-	case Undo::Action::JOIN:
-		break;
+		case Undo::Action::INSERT:		// Undoes delete
+		{
+			(*m_curRowIter).insert(m_curCol, text);
+			break;
+		}
+		case Undo::Action::DELETE:		// Undoes insert
+		{
+			(*m_curRowIter).erase(m_curCol, count);
+			break;
+		}
+		case Undo::Action::JOIN:		// Undoes enter (split)
+		{
+			if (m_curRow == m_lines.size() - 1)
+				return;
+			auto iter = m_curRowIter;
+			iter++;
+			(*m_curRowIter).append(*iter);
+			m_lines.erase(iter);
+			break;
+		}
+		case Undo::Action::SPLIT:
+		{
+			// Split current line into two parts
+			string beforeEnter = (*m_curRowIter).substr(0, m_curCol);
+			string afterEnter = (*m_curRowIter).substr(m_curCol);
+			*m_curRowIter = beforeEnter;
+			auto iter = m_curRowIter;
+			// Want to insert at row just after current
+			iter++;
+			m_lines.insert(iter, afterEnter);
+			break;
+		}
 	}
 
 }

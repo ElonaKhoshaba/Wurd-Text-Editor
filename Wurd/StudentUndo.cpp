@@ -75,35 +75,40 @@ StudentUndo::Action StudentUndo::get(int &row, int &col, int& count, std::string
 
 	Command topCommand = m_commands.top();
 	Action undoAction = Action::ERROR;
-	count = topCommand.count;
+	count = 1;
+	text = "";
 	switch (topCommand.action)
 	{
-	case Undo::Action::INSERT:
-		undoAction = Undo::Action::DELETE;
-		col = topCommand.col.front() - 1;
-		text = topCommand.batch;
-		break;
-
-	case Undo::Action::DELETE:
-		undoAction = Undo::Action::INSERT;
-		col = topCommand.col.back();
-		for (list<char>::iterator it = topCommand.restore.begin(); it != topCommand.restore.end(); it++)
+		case Undo::Action::INSERT:
 		{
-			text += (*it);
+			undoAction = Undo::Action::DELETE;
+			col = topCommand.col.front() - 1;
+			count = topCommand.count;
+			break;
 		}
-		break;
-	/*
-	case Undo::Action::JOIN:
-		undoAction = Undo::Action::SPLIT;
-		break;
-	case Undo::Action::SPLIT:
-		undoAction = Undo::Action::JOIN;
-		break;*/
-	default:
-		break;
+		case Undo::Action::DELETE:
+		{
+			undoAction = Undo::Action::INSERT;
+			col = topCommand.col.back();
+			for (list<char>::iterator it = topCommand.restore.begin(); it != topCommand.restore.end(); it++)
+			{
+				text += (*it);
+			}
+			break;
+		}
+		case Undo::Action::SPLIT:
+		{
+			undoAction = Undo::Action::JOIN;
+			col = topCommand.col.back();
+			break;
+		}
+		case Undo::Action::JOIN:
+		{
+			undoAction = Undo::Action::SPLIT;
+			col = topCommand.col.back();
+			break;
+		}
 	}
-
-	
 	row = topCommand.row;
 	m_commands.pop();
 	return undoAction;

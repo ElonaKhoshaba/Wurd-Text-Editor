@@ -1,2 +1,10 @@
-﻿  StudentUndo.cpp
+﻿  StudentTextEditor.cpp
+C:\CS32\winskel\Wurd\Wurd\StudentTextEditor.cpp(131,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\CS32\winskel\Wurd\Wurd\StudentTextEditor.cpp(141,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\CS32\winskel\Wurd\Wurd\StudentTextEditor.cpp(155,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\CS32\winskel\Wurd\Wurd\StudentTextEditor.cpp(181,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\CS32\winskel\Wurd\Wurd\StudentTextEditor.cpp(227,28): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\CS32\winskel\Wurd\Wurd\StudentTextEditor.cpp(311,21): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  StudentUndo.cpp
+  Generating Code...
   Wurd.vcxproj -> C:\CS32\winskel\Wurd\x64\Debug\Wurd.exe
