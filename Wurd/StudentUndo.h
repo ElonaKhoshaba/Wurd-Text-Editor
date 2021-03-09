@@ -3,6 +3,7 @@
 
 #include "Undo.h"
 #include <stack>
+#include <queue>
 
 class StudentUndo : public Undo 
 {
@@ -15,16 +16,17 @@ private:
 
 	struct Command
 	{
-		Command(Action action, int row, int col, char ch = 0)
-			: m_action(action), m_row(row), m_col(col), m_ch(ch) 
+		Command(Action act, int r, char cr = 0)
+			: action(act), row(r), ch(cr), count(0)
 		{
 
 		}
-		Action m_action;
-		int m_row;
-		int m_col;
-		char m_ch;
-		std::string m_batch = "";
+		Action action;
+		int row;
+		std::queue<int> col;
+		char ch;
+		int count;
+		std::string batch = "";
 	};
 
 	std::stack<Command> m_commands;

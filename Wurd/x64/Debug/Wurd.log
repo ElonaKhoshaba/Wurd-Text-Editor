@@ -1,3 +1,2 @@
-﻿  StudentSpellCheck.cpp
-C:\CS32\winskel\Wurd\Wurd\StudentSpellCheck.cpp(97,55): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+﻿  StudentUndo.cpp
   Wurd.vcxproj -> C:\CS32\winskel\Wurd\x64\Debug\Wurd.exe

@@ -310,36 +310,46 @@ int StudentTextEditor::getLines(int startRow, int numRows, std::vector<std::stri
 
 void StudentTextEditor::undo() 
 {
-	// getUndo()->get
 	int count = 0;
-	string text;
-	int row;
-	int col;
+	string text = "";
+	int row = 0;
+	int col = 0;
 	int distance = 0;
 	Undo::Action command = getUndo()->get(row, col, count, text);
+	
+	if (command == Undo::Action::ERROR)
+		return;
+	
+	distance = abs(m_curRow - row);
+	while (distance > 0)
+	{
+		if (m_curRow < row)
+			m_curRowIter++;
+		else
+			m_curRowIter--;
+		distance--;
+	}
+	m_curRow = row;
+	m_curCol = col;
+	
 	switch (command)
 	{
 	case Undo::Action::INSERT:
-		distance = abs(row - m_curCol);
-		while (distance > 0)
-		{
-			if (m_curRow < row)
-				m_curRowIter++;
-			else
-				m_curRowIter--;
-			distance--;
-		}
+	/*
 		m_curRow = row;
 		m_curCol = col;
 		(*m_curRowIter).insert(m_curCol, text);
-		m_curCol++;
+		m_curCol++;*/
 		break;
 	case Undo::Action::DELETE:
-
+		(*m_curRowIter).erase(m_curCol, count);
+		cerr << count;
+		cerr << m_curCol;
+		break;
 	case Undo::Action::SPLIT:
+		break;
 	case Undo::Action::JOIN:
-	case Undo::Action::ERROR:
-		return;
+		break;
 	}
 
 }
