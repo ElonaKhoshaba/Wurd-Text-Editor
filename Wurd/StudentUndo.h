@@ -4,6 +4,7 @@
 #include "Undo.h"
 #include <stack>
 #include <queue>
+#include <list>
 
 class StudentUndo : public Undo 
 {
@@ -27,6 +28,7 @@ private:
 		char ch;
 		int count;
 		std::string batch = "";
+		std::list<char> restore;
 	};
 
 	std::stack<Command> m_commands;

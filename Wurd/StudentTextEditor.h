@@ -46,6 +46,7 @@ private:
 	// insert and delete characters
 	// load and save text files
 	// undo your changes
+	void simpleInsert(char ch);
 	
 };
 

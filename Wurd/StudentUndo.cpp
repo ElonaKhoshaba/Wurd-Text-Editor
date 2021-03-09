@@ -1,6 +1,8 @@
 #include "StudentUndo.h"
 #include <stack>
+#include <queue>
 #include <string>
+#include <iostream>
 using namespace std;
 
 Undo* createUndo()
@@ -14,14 +16,14 @@ void StudentUndo::submit(const Action action, int row, int col, char ch)
 	if (m_commands.empty())
 	{
 		Command newCommand(action, row, ch);
-		newCommand.col.push(col);
-		newCommand.batch += ch;
-		newCommand.count += 1;
+		newCommand.col.push(col);			// Tracks columns
+		newCommand.batch += ch;				// For insertions
+		newCommand.count += 1;				// For insertions
+		newCommand.restore.push_back(ch);	// For deletions/backspaces
 		m_commands.push(newCommand);
 		return;
 	}
 	// Otherwise, stack not empty
-	
 	// Check if the new command should be batched with the top command
 	Command& topCommand = m_commands.top();
 	switch (action)
@@ -36,18 +38,34 @@ void StudentUndo::submit(const Action action, int row, int col, char ch)
 			return;
 		}
 		break;
+	case Undo::Action::DELETE:
+		if (action == topCommand.action && row == topCommand.row)
+		{
+			if (col == topCommand.col.back())	// Delete was pushed
+			{ 
+				topCommand.col.push(col);
+				topCommand.restore.push_back(ch);
+				return;
+			}
+			else if (col == topCommand.col.back() - 1)	// Backspace was pushed
+			{
+				topCommand.col.push(col);
+				topCommand.restore.push_front(ch);   // Order of characters must be reversed for backspace, so use push_front
+				return;
+			}
+		}
+		break;
 	default:
 		break;
 	}
-	
+	// Otherwise, 
 	// No batching, just regularly push the new command onto stack
 	Command newCommand(action, row, ch);
-	newCommand.col.push(col);
-	newCommand.batch += ch;
-	newCommand.count += 1;
+	newCommand.col.push(col);			// Tracks columns
+	newCommand.batch += ch;				// For insertions
+	newCommand.count += 1;				// For insertions
+	newCommand.restore.push_back(ch);	// For deletions/backspaces
 	m_commands.push(newCommand);
-
-	//if(topCommand.batch.size() == 1)
 }
 
 StudentUndo::Action StudentUndo::get(int &row, int &col, int& count, std::string& text) 
@@ -62,12 +80,19 @@ StudentUndo::Action StudentUndo::get(int &row, int &col, int& count, std::string
 	{
 	case Undo::Action::INSERT:
 		undoAction = Undo::Action::DELETE;
-		
+		col = topCommand.col.front() - 1;
+		text = topCommand.batch;
 		break;
 
-	/*case Undo::Action::DELETE:
+	case Undo::Action::DELETE:
 		undoAction = Undo::Action::INSERT;
+		col = topCommand.col.back();
+		for (list<char>::iterator it = topCommand.restore.begin(); it != topCommand.restore.end(); it++)
+		{
+			text += (*it);
+		}
 		break;
+	/*
 	case Undo::Action::JOIN:
 		undoAction = Undo::Action::SPLIT;
 		break;
@@ -78,9 +103,8 @@ StudentUndo::Action StudentUndo::get(int &row, int &col, int& count, std::string
 		break;
 	}
 
-	text = topCommand.batch;
+	
 	row = topCommand.row;
-	col = topCommand.col.front() - 1;
 	m_commands.pop();
 	return undoAction;
 }

@@ -241,14 +241,17 @@ void StudentTextEditor::insert(char ch)
 {
 	if (ch == '\t')
 	{
-		(*m_curRowIter).insert(m_curCol, "    ");
-		m_curCol += 4;
+		for (int i = 0; i < 4; i++)
+			simpleInsert(' ');
 	}
 	else
-	{
-		(*m_curRowIter).insert((*m_curRowIter).begin() + m_curCol, ch);
-		m_curCol++;
-	}
+		simpleInsert(ch);
+		
+}
+void StudentTextEditor::simpleInsert(char ch)
+{
+	(*m_curRowIter).insert((*m_curRowIter).begin() + m_curCol, ch);
+	m_curCol++;
 	getUndo()->submit(Undo::Action::INSERT, m_curRow, m_curCol, ch);
 }
 
@@ -335,16 +338,12 @@ void StudentTextEditor::undo()
 	switch (command)
 	{
 	case Undo::Action::INSERT:
-	/*
-		m_curRow = row;
-		m_curCol = col;
 		(*m_curRowIter).insert(m_curCol, text);
-		m_curCol++;*/
+		/*for (int i = 0; i < text.size() - 1; i++)
+			m_curCol++;*/
 		break;
 	case Undo::Action::DELETE:
 		(*m_curRowIter).erase(m_curCol, count);
-		cerr << count;
-		cerr << m_curCol;
 		break;
 	case Undo::Action::SPLIT:
 		break;
