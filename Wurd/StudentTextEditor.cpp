@@ -11,8 +11,7 @@ TextEditor* createTextEditor(Undo* un)
 	return new StudentTextEditor(un);
 }
 
-// Initializes current editing position, and everything else to manage data structures
-// RUNTIME: O(1)
+// Initializes current editing position and line list
 StudentTextEditor::StudentTextEditor(Undo* undo)
  : TextEditor(undo), m_curRow(0), m_curCol(0)
 {
@@ -20,38 +19,24 @@ StudentTextEditor::StudentTextEditor(Undo* undo)
 	m_curRowIter = m_lines.begin();
 }
 
-// Should NOT free Undo object
-// RUNTIME: O(N), where N is the number of lines in the file currently being edited
+// No dynamic memory allocation used for this class or Undo
 StudentTextEditor::~StudentTextEditor()
 {
-	// TODO
-	// for each line in linesBeingEdited
-	//		delete line  ???
+
 }
 
 // Loads the contents of a text file off disk into the editor
-//	The variable file contains a full path name 
-//	Each line might have a \r before a \n, REMOVE the \r before
-//	adding the line to your internal data structure
-// RUNTIME: O(M + N) where M is the number of lines currently being edited and N is the number of lines
-//		in the new file being loaded
-// Opens specified file using C++ file I/O classes and reads its contents into my data structure(s)
 bool StudentTextEditor::load(std::string file) 
 {
-	//	if specified file cannot be found
-	//		do nothing, return false
+	// If opening the file fails do nothing
 	ifstream textFile(file);
-	if (!textFile) // If the file opening fails
-	{
+	if (!textFile) 
 		return false;
-	}
 	
-	//	if already editing an eisting file and the specified file can be found
-	//		reset old content of text editor
+	// If already editing an eisting file, reset old content of text editor
 	reset();
 
-	//	load new file, removing the \r's (text editor must contain contents of the new file)
-	//	reset curRow and curCol to beginning of new file (0,0)
+	// Load the new file, removing the \r's 
 	string line;
 	while (getline(textFile, line))
 	{
@@ -65,134 +50,106 @@ bool StudentTextEditor::load(std::string file)
 	return true;  
 }
 
-// Saves the contents of the text editor to a file on your disk
-// Opens specified file using C++ file IO classes
-// Writes the lines in the text editor to the file, overwriting any previous data in the file with new contents
-// After each line append \n char
-// RUNTIME: O(M), where M is the number of lines in the editor currently being edited
+// Saves the contents of the text editor to a file on your disk 
+// overwriting any previous data in the file with new contents
 bool StudentTextEditor::save(std::string file) 
 {
-//	if file cannot be opened
-//		return false
+	// If file opening fails, do nothing
 	ofstream saveFile(file);
-	if (!saveFile) // If the file opening fails
-	{
+	if (!saveFile) 
 		return false;
-	}
 
 	auto iter = m_lines.begin();
 	for (int i = 0; i < m_lines.size() && iter != m_lines.end(); i++)
 	{	
-		saveFile << *iter << endl;
+		saveFile << *iter << endl;	// endl appends \n after each line
 		iter++;
 	}
 	return true;
-//	otherwise succesfully save the lines in the editor to the file
-//	return true
-	
-	return false;  // TODO
 }
 
 // Clears text editor's contents and resets the editing position to the top of the file
-// After done, there should be no text in the editor
-// Reset undo state, so no possible undos are possible after the reset 
-// RUNTIME: O(N), where N is the number of rows being edited 
+// Also resets undo state, so no possible undos are possible after the reset 
 void StudentTextEditor::reset() 
 {
-	// clear text editor's contents
-	// curRow = 0;
-	// curCol = 0;
-	// reset undo state
 	while (!m_lines.empty())
-	{
 		m_lines.pop_back();
-	}
 	m_curRow = 0;
 	m_curCol = 0;
 	m_curRowIter = m_lines.begin();
 	if(getUndo() != nullptr)
 		getUndo()->clear();
-	// TODO
 }
 
 // Adjusts current editing position
 void StudentTextEditor::move(Dir dir) 
 {
-	// TODO
 	size_t newLineSize;
 	switch (dir)
 	{
-	case Dir::UP:
-		if (m_curRow == 0)
-			return;
-		m_curRowIter--;
-		newLineSize = (*m_curRowIter).size();
-		if (newLineSize < m_curCol)
-			m_curCol = newLineSize;
-		m_curRow--;
-		break;
-	
-	case Dir::DOWN:
-		if (m_curRow == m_lines.size() - 1 || m_curRowIter == m_lines.end())
-			return;
-		m_curRowIter++;
-		newLineSize = (*m_curRowIter).size();		// repositions cursor if the line below is
-		if (newLineSize < m_curCol)					// shorter than the one above, it starts at the end
-			m_curCol = newLineSize;					// of the shorter line
-		m_curRow++;
-		break;
-
-	case Dir::LEFT:
-		// if editing position is already on the first character of the line
-		//	move cursor to AFTER the last character on the previous line
-		if (m_curRow == 0 && m_curCol == 0)
-			return;
-		
-		if (m_curCol == 0)
-		{
+		case Dir::UP:
+			if (m_curRow == 0)						// Cursor on first row, do nothing
+				return;
+			m_curRowIter--;							// Otherwise move cursor up a row
+			newLineSize = (*m_curRowIter).size();
+			if (newLineSize < m_curCol)				// If the line above has a longer length than the current line,
+				m_curCol = newLineSize;				// move the cursor to be at the end of the above line
 			m_curRow--;
-			m_curRowIter--;
-			m_curCol = (*m_curRowIter).size();
-		}
-		else 
-			m_curCol--;
-		break; 
+			break;
 	
-	case Dir::RIGHT:
-		// cursor just after last leter of last line, do nothing
-		if (m_curRow == m_lines.size() - 1 && m_curCol == (*m_curRowIter).size())
-			return;
-
-		if (m_curCol == (*m_curRowIter).size())
-		{
+		case Dir::DOWN:
+			if (m_curRow == m_lines.size() - 1 || m_curRowIter == m_lines.end())  // Cursor on last row, do nothing
+				return;
+			m_curRowIter++;								// Otherwise move cursor down a row
+			newLineSize = (*m_curRowIter).size();		
+			if (newLineSize < m_curCol)					// If the line below has a longer length than the current line,
+				m_curCol = newLineSize;					// move the cursor to be at the end of the below line
 			m_curRow++;
-			m_curRowIter++;
-			m_curCol = 0;
-		}
-		else
-			m_curCol++;
-		break;
+			break;
+
+		case Dir::LEFT:
+			if (m_curRow == 0 && m_curCol == 0)	     	// Cursor is at beginning of file, do nothing
+				return;
+			if (m_curCol == 0)							// If editing position is already on the first character of the line
+			{											// move cursor to AFTER the last character on the previous line
+				m_curRow--;
+				m_curRowIter--;
+				m_curCol = (*m_curRowIter).size();
+			}
+			else 
+				m_curCol--;
+			break; 
 	
-	case Dir::HOME:
-		m_curCol = 0;
-		break;
+		case Dir::RIGHT:
+			if (m_curRow == m_lines.size() - 1 && m_curCol == (*m_curRowIter).size())	// Cursor is just after last leter of last line, do nothing
+				return;
+			if (m_curCol == (*m_curRowIter).size())		// If editing position is on just after the last character on the line
+			{											// move cursor to the first character on the next line
+				m_curRow++;
+				m_curRowIter++;
+				m_curCol = 0;
+			}
+			else
+				m_curCol++;
+			break;
 	
-	case Dir::END:
-		m_curCol = (*m_curRowIter).size();
+		case Dir::HOME:	// Go to the first character of the line
+			m_curCol = 0;	
+			break;
+	
+		case Dir::END:	// Go to just after the last character of the line
+			m_curCol = (*m_curRowIter).size();	
 	}
 }
 
-// RUNTIME: 
-//	Char in MIDDLE of line: O(L), where L is the length of the line containting the current editing position
-//	Deletion at END, result in a merge: O(L1 + L2), where L1 is the length of the current line of text and
-//  L2 is the length of the next line in the editor
-// This function must NOT have a runtime that depends on the number of lines being edited (M)
+// Deletes a character at the given position, or merges the line below with the current
+// line if the cursor is just past the end of the given line
 void StudentTextEditor::del() 
 {
 	if (m_curCol != (*m_curRowIter).size())
 	{
 		char ch = (*m_curRowIter).at(m_curCol);
-		(*m_curRowIter).erase((*m_curRowIter).begin() + m_curCol);
+		(*m_curRowIter).erase((*m_curRowIter).begin() + m_curCol);			// Erase character at current column
 		getUndo()->submit(Undo::Action::DELETE, m_curRow, m_curCol, ch);
 	}
 	else // cursor at just past end of one line, merge lines
@@ -207,36 +164,39 @@ void StudentTextEditor::del()
 	}
 }
 
+// Deletes a character at the position one before the given position, or merges
+// the line above with the current line if the cursor is at the first character of the given line
 void StudentTextEditor::backspace() 
 {
-	if (m_curCol == 0 && m_curRow == 0)
+	if (m_curCol == 0 && m_curRow == 0)		// Can't backspace at the beginning of a file
 		return;
 
 	if (m_curCol > 0)
 	{
 		char ch = (*m_curRowIter).at(m_curCol - 1);
-		(*m_curRowIter).erase((*m_curRowIter).begin() + m_curCol - 1);	// delete character just before cursor
-		m_curCol--;		// move cursor left
-		getUndo()->submit(Undo::Action::DELETE, m_curRow, m_curCol, ch);	// QUESTIONABLE
+		(*m_curRowIter).erase((*m_curRowIter).begin() + m_curCol - 1);	// Erase character just before cursor
+		m_curCol--;														// Move cursor left
+		getUndo()->submit(Undo::Action::DELETE, m_curRow, m_curCol, ch);	
 	}
-	else if (m_curCol == 0)
+	else if (m_curCol == 0)		// Merge lines
 	{
 		auto iter = m_curRowIter;
 		string lineBelow = *iter;
 		iter--;
 		m_curCol = (*iter).size();
-		(*iter).append(lineBelow);
-		m_curRow--;
+		(*iter).append(lineBelow);	// Append current line to the line above it (*iter = line above)
+		m_curRow--; 
 		m_curRowIter--;
 		auto iterErase = m_curRowIter;
 		iterErase++;
-		m_lines.erase(iterErase);
+		m_lines.erase(iterErase);	// Erase the current line
 		getUndo()->submit(Undo::Action::JOIN, m_curRow, m_curCol);
 	}
 	
 }
 
-// RUNTIME: O(L), where L is the length of the line containing the current editing position
+// Inserts a character at the given position, but if the character is a tab
+// insert four spaces 
 void StudentTextEditor::insert(char ch) 
 {
 	if (ch == '\t')
@@ -248,6 +208,8 @@ void StudentTextEditor::insert(char ch)
 		simpleInsert(ch);
 		
 }
+
+// Inserts a character at the given position (\t not accounted for)
 void StudentTextEditor::simpleInsert(char ch)
 {
 	(*m_curRowIter).insert((*m_curRowIter).begin() + m_curCol, ch);
@@ -255,8 +217,7 @@ void StudentTextEditor::simpleInsert(char ch)
 	getUndo()->submit(Undo::Action::INSERT, m_curRow, m_curCol, ch);
 }
 
-// RUNTIME: O(L), where L is the length of the line containing the current editing position
-// This function must NOT have a runtime that depends on the number of lines being edited (M)
+// Splits the line into two at the current position
 void StudentTextEditor::enter() 
 {
 	getUndo()->submit(Undo::Action::SPLIT, m_curRow, m_curCol);
@@ -265,7 +226,7 @@ void StudentTextEditor::enter()
 	string afterEnter = (*m_curRowIter).substr(m_curCol);
 	*m_curRowIter = beforeEnter;
 	auto iter = m_curRowIter;
-	//want to insert at row just after current
+	// Want to insert at row just after current
 	iter++;
 	m_lines.insert(iter, afterEnter);
 	m_curRow++;
@@ -273,21 +234,23 @@ void StudentTextEditor::enter()
 	m_curCol = 0;
 }
 
-// RUNTIME: O(1), runtime should not depends on the number of lines being edited or the length of the current line
+// Returns the current row and col position
 void StudentTextEditor::getPos(int& row, int& col) const 
 {
 	row = m_curRow;
 	col = m_curCol;
 }
 
-// RUNTIME: O(abs(curRow - startRow) + numRows*L)
+// Gets the lines in the text editor from startRow to numRows
+// Returns the number of lines gotten
 int StudentTextEditor::getLines(int startRow, int numRows, std::vector<std::string>& lines) const
 {
 	if (startRow < 0 || numRows < 0 || startRow > m_lines.size())
 		return -1;
 	
-	int distance = abs(m_curRow - startRow);
+	// Increment the current position of iter to the point to start row
 	auto iter = m_curRowIter;
+	int distance = abs(m_curRow - startRow);
 	while (distance > 0)
 	{
 		if (m_curRow < startRow)
@@ -297,10 +260,11 @@ int StudentTextEditor::getLines(int startRow, int numRows, std::vector<std::stri
 		distance--;
 	}
 
+	// Clear previous data in lines
 	for (int i = 0; i != lines.size(); i++)
 		lines.pop_back();
 
-	if (startRow == m_lines.size())
+	if (startRow == m_lines.size())	  // Invalid starting position
 		return 0;
 
 	for (int j = 0; j < numRows && iter != m_lines.end(); j++)
@@ -308,22 +272,24 @@ int StudentTextEditor::getLines(int startRow, int numRows, std::vector<std::stri
 		lines.push_back(*iter);
 		iter++;
 	}
-	return lines.size();// TODO
+	return lines.size();
 }
 
+// Undoes the lastest change (insert, delete, enter, merge) made by the user 
 void StudentTextEditor::undo() 
 {
 	int count = 0;
 	string text = "";
 	int row = 0;
 	int col = 0;
-	int distance = 0;
+	// Gets top undo command from undo stack
 	Undo::Action command = getUndo()->get(row, col, count, text);
 	
 	if (command == Undo::Action::ERROR)
 		return;
 	
-	distance = abs(m_curRow - row);
+	// Changes current position of iterator to point to where the last change happened
+	int distance = abs(m_curRow - row);
 	while (distance > 0)
 	{
 		if (m_curRow < row)
@@ -370,5 +336,4 @@ void StudentTextEditor::undo()
 			break;
 		}
 	}
-
 }

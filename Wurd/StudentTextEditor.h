@@ -8,46 +8,67 @@
 
 class Undo;
 
-class StudentTextEditor : public TextEditor {
+class StudentTextEditor : public TextEditor 
+{
 public:
-	// Add NO new public functions/varialbes
-	
-	// 
-	StudentTextEditor(Undo* undo);
-	~StudentTextEditor();
+	StudentTextEditor(Undo* undo);	// Initializes current editing position and line list
+	~StudentTextEditor();			// Does nothing, no dynamic memory allocation used
+
+	//////////////////////
+	// Public Functions //
+	//////////////////////
+
+	// Loads the contents of a text file off disk into the editor
 	bool load(std::string file);
+
+	// Saves the contents of the text editor to a file on your disk 
+	// overwriting any previous data in the file with new contents
 	bool save(std::string file);
+
+	// Clears text editor's contents and resets the editing position to the top of the file
+	// Also resets undo state, so no possible undos are possible after the reset 
 	void reset();
+
+	// Adjusts current editing position
 	void move(Dir dir);
+
+	// Deletes a character at the given position, or merges the line below with the current
+	// line if the cursor is just past the end of the given line
 	void del();
+
+	// Deletes a character at the position one before the given position, or merges
+	// the line above with the current line if the cursor is at the first character of the given line
 	void backspace();
+
+	// Inserts a character at the given position, but if the character is a tab
+	// inserts four spaces 
 	void insert(char ch);
+
+	// Splits the line into two at the current position
 	void enter();
+
+	// Returns the current row and col position
 	void getPos(int& row, int& col) const;
+
+	// Gets the lines in the text editor from startRow to numRows
+	// Returns the number of lines gotten
 	int getLines(int startRow, int numRows, std::vector<std::string>& lines) const;
+	
+	// Undoes the lastest change (insert, delete, enter, merge) made by the user 
 	void undo();
 
 private:
-	// can't use vectors, deques or std::array
-	// CAN use list, map, set
+	int m_curRow;									// Current row being edited
+	int m_curCol;									// Current col being edited
+	std::list<std::string>::iterator m_curRowIter;	// Points to current row being edited
+	std::list<std::string> m_lines;					// Lines being edited	
 
-	// CORE VARIABLES:
-	// 1. list linesBeingEdited
-	// 2. current editing position curRow, curCol
-	int m_curRow;
-	int m_curCol;
-	std::list<std::string> m_lines;
-	std::list<std::string>::iterator m_curRowIter;
-	// 3. data to faciliate undo operations? pointer to StudentUndo
+	//////////////////////////////
+	// Private Helper Functions //
+	//////////////////////////////
 
-	// other variables
-
-	// GOAL: 
-	// insert and delete characters
-	// load and save text files
-	// undo your changes
+	// Inserts a character at the given position (\t not accounted for)
 	void simpleInsert(char ch);
-	
 };
 
 #endif // STUDENTTEXTEDITOR_H_
