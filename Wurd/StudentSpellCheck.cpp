@@ -25,7 +25,7 @@ bool StudentSpellCheck::load(std::string dictionaryFile)
 
 
 	// Delete old dictionary and make a new one (Deletion runs in O(N))
-	delete m_root;	
+	removeAll(m_root);	
 	m_root = new TrieNode('\0');
 
 	// Load the new dictionary using the contexts of dictionaryFile
@@ -71,7 +71,6 @@ void StudentSpellCheck::spellCheckLine(const std::string& line, std::vector<Spel
 	int start = 0;
 	int prevStart = -1;
 	int end = 0;
-	int count = 0;
 	vector<Position> positions;		// All possible positions of all words in line
 	vector<string> words;			// All possible words (including ones spelled correctly)
 	string temp; 
@@ -126,8 +125,8 @@ void StudentSpellCheck::insert(StudentSpellCheck::TrieNode* curr, string line)
 		// Adds each character in word to tree only if needed, and advances the curr pointer in that direction
 		if (isalpha(ch))
 		{
-			if (curr->children[ch - 'a'] == nullptr)
-				curr->children[ch - 'a'] = new TrieNode(ch);
+			if (curr->children[abs(ch - 'a')] == nullptr)
+				curr->children[abs(ch - 'a')] = new TrieNode(ch);
 			curr = curr->children[ch - 'a'];
 		}
 		else if (ch == '\'')
