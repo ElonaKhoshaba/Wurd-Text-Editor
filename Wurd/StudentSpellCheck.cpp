@@ -127,7 +127,7 @@ void StudentSpellCheck::insert(StudentSpellCheck::TrieNode* curr, string line)
 		{
 			if (curr->children[abs(ch - 'a')] == nullptr)
 				curr->children[abs(ch - 'a')] = new TrieNode(ch);
-			curr = curr->children[ch - 'a'];
+			curr = curr->children[abs(ch - 'a')];
 		}
 		else if (ch == '\'')
 		{

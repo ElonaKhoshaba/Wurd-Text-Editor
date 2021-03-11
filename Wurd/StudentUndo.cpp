@@ -102,6 +102,8 @@ StudentUndo::Action StudentUndo::get(int &row, int &col, int& count, std::string
 			undoAction = Undo::Action::SPLIT;
 			break;
 		}
+		default:
+			return Undo::Action::ERROR;
 	}
 	m_commands.pop();
 	return undoAction;

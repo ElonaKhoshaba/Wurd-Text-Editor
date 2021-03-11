@@ -335,5 +335,7 @@ void StudentTextEditor::undo()
 			m_lines.insert(iter, afterEnter);
 			break;
 		}
+		default:
+			return;
 	}
 }
